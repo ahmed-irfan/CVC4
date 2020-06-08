@@ -102,10 +102,6 @@ std::vector<NlLemma> IAndSolver::checkInitialRefine()
       conj.push_back(nm->mkNode(IMPLIES, i[0].eqNode(d_zero), i.eqNode(d_zero)));
       // y=0 => iand(x,y)=0
       conj.push_back(nm->mkNode(IMPLIES, i[1].eqNode(d_zero), i.eqNode(d_zero)));
-      // iand(x,y)=0 => x=0 \/ y=0
-      conj.push_back(nm->mkNode(IMPLIES, i.eqNode(d_zero),
-                                nm->mkNode(OR, i[0].eqNode(d_zero),
-                                           i[1].eqNode(d_zero))));
       //(= (+ (iand x y) (ior x y)) (+ x y))
       // Node ior = mkIOr(k,i[0],i[1]);
       // conj.push_back(i.eqNode(nm->mkNode(MINUS, nm->mkNode(PLUS, i[0], i[1]),
