@@ -98,10 +98,6 @@ std::vector<NlLemma> IAndSolver::checkInitialRefine()
       conj.push_back(nm->mkNode(LEQ, i, i[1]));
       // x=y => iand(x,y)=x
       conj.push_back(nm->mkNode(IMPLIES, i[0].eqNode(i[1]), i.eqNode(i[0])));
-      // x=0 => iand(x,y)=0
-      conj.push_back(nm->mkNode(IMPLIES, i[0].eqNode(d_zero), i.eqNode(d_zero)));
-      // y=0 => iand(x,y)=0
-      conj.push_back(nm->mkNode(IMPLIES, i[1].eqNode(d_zero), i.eqNode(d_zero)));
 
       Node a = d_model.computeAbstractModelValue(i[0]);
       Node b = d_model.computeAbstractModelValue(i[1]);
