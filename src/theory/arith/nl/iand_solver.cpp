@@ -115,7 +115,7 @@ std::vector<NlLemma> IAndSolver::checkInitialRefine()
         Node ylt2a = nm->mkNode(LT, i[1], nm->mkNode(MULT, d_two, a));
         pre = nm->mkNode(AND, xeqa, ygea);
         pre = nm->mkNode(AND, pre, ylt2a);
-        conj.push_back(nm->mkNode(IMPLIES, pre, i.eqNode(a)));
+        conj.push_back(nm->mkNode(IMPLIES, pre, nm->mkNode(GEQ, i, a)));
       }
 
       if (isPow2(b, op)) {
@@ -130,7 +130,7 @@ std::vector<NlLemma> IAndSolver::checkInitialRefine()
         Node xlt2b = nm->mkNode(LT, i[0], nm->mkNode(MULT, d_two, b));
         pre = nm->mkNode(AND, yeqb, xgeb);
         pre = nm->mkNode(AND, pre, xlt2b);
-        conj.push_back(nm->mkNode(IMPLIES, pre, i.eqNode(b)));
+        conj.push_back(nm->mkNode(IMPLIES, pre, nm->mkNode(GEQ, i, a)));
       }
 
       // Alternative lemma, but it introduces new iand terms
