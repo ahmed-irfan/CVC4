@@ -92,6 +92,8 @@ class IAndSolver
   /** all IAND terms, for each bit-width */
   std::map<unsigned, std::vector<Node> > d_iands;
 
+  bool isPow2(Node a, Node op) const;
+
   /**
    * convert integer value to bitvector value of bitwidth k,
    * equivalent to Rewriter::rewrite( ((_ intToBv k) n) ).

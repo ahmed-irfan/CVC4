@@ -102,6 +102,46 @@ std::vector<NlLemma> IAndSolver::checkInitialRefine()
       conj.push_back(nm->mkNode(IMPLIES, i[0].eqNode(d_zero), i.eqNode(d_zero)));
       // y=0 => iand(x,y)=0
       conj.push_back(nm->mkNode(IMPLIES, i[1].eqNode(d_zero), i.eqNode(d_zero)));
+
+      Node a = d_model.computeAbstractModelValue(i[0]);
+      Node b = d_model.computeAbstractModelValue(i[1]);
+
+      if (isPow2(a, op)) { // a is a power of 2
+        // if x = a and y < a then iand(x, y) = 0
+        Node xeqa = i[0].eqNode(a);
+        // assuming that y can't be negative -- is it correct?
+        Node ylta = nm->mkNode(LT, i[1], a);
+        Node pre = nm->mkNode(AND, xeqa, ylta);
+        conj.push_back(nm->mkNode(IMPLIES, pre, i.eqNode(d_zero)));
+
+        // if x = a and y >= a and y < 2*a then iand(x, y) = a
+        Node ygea = nm->mkNode(GEQ, i[1], a);
+        Node ylt2a = nm->mkNode(LT, i[1], nm->mkNode(MULT, d_two, a));
+        pre = nm->mkNode(AND, xeqa, ygea);
+        pre = nm->mkNode(AND, pre, ylt2a);
+        conj.push_back(nm->mkNode(IMPLIES, pre, i.eqNode(a)));
+      }
+
+      if (isPow2(b, op)) {
+        // if y = b and x < b then iand(x, y) = 0
+        Node yeqb = i[1].eqNode(b);
+        Node xltb = nm->mkNode(LT, i[0], b);
+        Node pre = nm->mkNode(AND, yeqb, xltb);
+        conj.push_back(nm->mkNode(IMPLIES, pre, i.eqNode(d_zero)));
+
+        // if y = b and x >= b and x < 2*b then iand(x, y) = b
+        Node xgeb = nm->mkNode(GEQ, i[0], b);
+        Node xlt2b = nm->mkNode(LT, i[0], nm->mkNode(MULT, d_two, b));
+        pre = nm->mkNode(AND, yeqb, xgeb);
+        pre = nm->mkNode(AND, pre, xlt2b);
+        conj.push_back(nm->mkNode(IMPLIES, pre, i.eqNode(b)));
+      }
+
+      // Alternative lemma, but it introduces new iand terms
+      // if iand(x, x - 1) = 0 and x != 0 and y < x then iand(x,y) =0
+      // if iand(y, y - 1) = 0 and y != 0 and x < y then iand(x,y) = 0
+
+
       //(= (+ (iand x y) (ior x y)) (+ x y))
       // Node ior = mkIOr(k,i[0],i[1]);
       // conj.push_back(i.eqNode(nm->mkNode(MINUS, nm->mkNode(PLUS, i[0], i[1]),
@@ -196,6 +236,21 @@ std::vector<NlLemma> IAndSolver::checkFullRefine()
   }
 
   return lems;
+}
+
+bool IAndSolver::isPow2(Node n, Node op) const
+{
+  Assert(n.isConst() && n.getType().isInteger());
+  Node valn = d_model.computeConcreteModelValue(n);
+
+  NodeManager* nm = NodeManager::currentNM();
+  Node andTerm = nm->mkNode(IAND, op, n, nm->mkNode(MINUS, n, d_one));
+  Node checkTerm = andTerm.eqNode(d_zero);
+  checkTerm = nm->mkNode(AND, checkTerm, nm->mkNode(NOT, n.eqNode(d_zero)));
+
+  Node valC = Rewriter::rewrite(checkTerm);
+
+  return valC == NodeManager::currentNM()->mkConst<bool>(true);
 }
 
 Node IAndSolver::convertToBvK(unsigned k, Node n) const
